@@ -1,0 +1,101 @@
+import random
+import pygame
+
+# 初始化
+pygame.init()
+window_size = [800, 600]
+screen = pygame.display.set_mode(window_size)
+screen.fill([255, 255, 255])
+
+# 載入圖片
+image = pygame.image.load('./tree.png')
+
+# 顯示圖片到視窗上 (10, 0) 位置，記錄好初始位置
+image_x = 200
+image_y = 200
+
+# 宣告 font 文字物件
+head_font = pygame.font.SysFont(None, 80)
+
+# 渲染方法會回傳 surface 物件
+text_surface = head_font.render('Try to do your best!Qiuck!', True, (0, 0, 0))
+
+# 繪製圖片初始位置
+screen.blit(image, (image_x, image_y))
+
+# 是否跳出遊戲迴圈的變數
+is_game_over = False
+
+# 取出起始時間
+time_start = pygame.time.get_ticks()
+
+# 文字模組，用來顯示文字，可用來顯示儀表板資料
+point_font = pygame.font.SysFont(None, 35)
+time_font = pygame.font.SysFont(None, 35)
+announcement_font = pygame.font.SysFont(None, 40)
+
+# 遊戲分數
+points = 0
+
+# 總遊戲時間
+total_time = 60
+
+while not is_game_over:
+    # 目前時間
+    time_now = pygame.time.get_ticks()
+    # 取出當下時間，若時間超過 30 秒，則印出 over 30secs 遊戲結束
+    during_time = (time_now - time_start) // 1000
+
+    if during_time >= 60:
+        print('game over')
+        is_game_over = True
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            is_game_over = True
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_position = pygame.mouse.get_pos()
+            # 可以看到取得的是 滑鼠點擊的 x, y 軸 tuple (x, y) 位置
+            print(mouse_position)
+            # 取得圖片範圍大小的矩形物件，可以想成是圖片物件，可以進一步取得長寬等屬性。搭配初始位置即可判斷是否有點擊到圖片
+            image_rect = image.get_rect()
+            # 取出圖片寬度
+            image_width = image_rect.width
+            # 取出圖片長度
+            image_height = image_rect.height
+            # 點到滑鼠的 x 座標大於圖片左上 x 座標，小於圖片左上 x 座標 + 圖片寬度 且 滑鼠的 y 座標大於圖片左上 y 座標，小於圖片左上 y 座標 + 圖片高度：代表有點到圖片
+            if image_x < mouse_position[0] < image_x + image_width \
+                    and image_y < mouse_position[1] < image_y + image_height:
+                points += 100
+                # 當被點擊後圖片隨機產生新位置
+                image_x = random.randint(0, 800 - image_width)
+                image_y = random.randint(0, 600 - image_height)
+                screen.blit(image, (image_x, image_y))
+            else:
+                points -= 50
+                image_x = random.randint(0, 800 - image_width)
+                image_y = random.randint(0, 600 - image_height)
+                screen.blit(image, (image_x, image_y))
+
+    screen.fill([255, 255, 255])
+    # 遊戲剩餘時間
+    remaining_time = total_time -  during_time
+    # 製作遊戲分數文字元素
+    point_font_surface = point_font.render('Points: {}'.format(points), True, (0, 0, 0))
+    # 繪製遊戲分數文字到視窗
+    screen.blit(point_font_surface, (10, 0))
+    # 製作剩餘時間文字元素
+    time_font_surface = time_font.render('Time: {}'.format(remaining_time), True, (0, 0, 0))
+    # 繪製剩餘時間文字到視窗
+    screen.blit(time_font_surface, (10, 30))
+    # 繪製鼓勵標語文字元素
+    announcement_font_surface = announcement_font.render('Quick! Quick! Quick!', True, (0, 0, 0))
+    # 繪製鼓勵標語到視窗
+    screen.blit(announcement_font_surface, (10, 60))
+    # 繪製圖片
+    screen.blit(image, (image_x, image_y))
+    # 記得更新畫面（有點像是 tkinter 的 update）
+    pygame.display.flip()
+
+# 關閉pygame
+pygame.quit()
